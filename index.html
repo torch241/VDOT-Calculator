@@ -1,0 +1,458 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VDOT 计算器</title>
+    <!-- Bootstrap CDN -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
+    <!-- Bootstrap Icons CDN -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary-color: #4caf50; /* 绿色主色 */
+            --secondary-color: #388e3c;
+            --bg-color: #e8f5e9; /* 浅绿色背景 */
+            --text-color: #333;
+            --card-bg: white;
+            --table-hover: #f1f8e9;
+            --shadow: rgba(0, 0, 0, 0.1);
+        }
+        [data-bs-theme="dark"] {
+            --primary-color: #66bb6a;
+            --secondary-color: #4caf50;
+            --bg-color: #1e1e1e;
+            --text-color: #ddd;
+            --card-bg: #2c2c2c;
+            --table-hover: #333;
+            --shadow: rgba(0, 0, 0, 0.3);
+        }
+        body {
+            font-family: 'Roboto', sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 20px;
+            transition: background-color 0.3s ease, color 0.3s ease;
+        }
+        h1 {
+            font-weight: 700;
+            color: var(--primary-color);
+            margin-bottom: 20px;
+        }
+        .container {
+            max-width: 900px;
+            background: var(--card-bg);
+            border-radius: 15px;
+            box-shadow: 0 4px 20px var(--shadow);
+            padding: 30px;
+            transition: background-color 0.3s ease, box-shadow 0.3s ease;
+        }
+        .btn-primary {
+            background-color: var(--primary-color);
+            border: none;
+            transition: background-color 0.3s ease, transform 0.2s ease;
+        }
+        .btn-primary:hover {
+            background-color: var(--secondary-color);
+            transform: scale(1.05);
+        }
+        .btn-reset {
+            background-color: #6c757d;
+            border: none;
+        }
+        .btn-reset:hover {
+            background-color: #5a6268;
+        }
+        #result .card {
+            margin-top: 20px;
+            border: none;
+            box-shadow: 0 2px 10px var(--shadow);
+            animation: fadeIn 0.5s ease-in-out;
+        }
+        .vdot-highlight-card {
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            color: white;
+            padding: 20px;
+            border-radius: 12px;
+            text-align: center;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+        }
+        .vdot-highlight-card h3 {
+            margin: 0;
+            font-size: 3rem;
+            font-weight: bold;
+        }
+        .vdot-highlight-card p {
+            margin: 10px 0 0;
+            font-size: 1.2rem;
+        }
+        .table {
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 2px 10px var(--shadow);
+        }
+        .table thead th {
+            background-color: var(--primary-color);
+            color: white;
+        }
+        .table-striped tbody tr:nth-of-type(odd) {
+            background-color: rgba(0, 0, 0, 0.05);
+        }
+        .table-hover tbody tr:hover {
+            background-color: var(--table-hover);
+        }
+        .warning {
+            color: #d32f2f;
+            font-weight: bold;
+            background-color: #ffebee;
+            padding: 12px;
+            border-radius: 4px;
+            margin: 10px 0;
+        }
+        #daniels-knowledge {
+            margin-top: 40px;
+            padding: 20px;
+            background: var(--card-bg);
+            border-radius: 10px;
+            box-shadow: 0 2px 10px var(--shadow);
+            transition: background-color 0.3s ease;
+        }
+        #theme-switcher {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 1000;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        @media (prefers-color-scheme: dark) {
+            body {
+                --bg-color: #1e1e1e;
+                --text-color: #ddd;
+                --card-bg: #2c2c2c;
+                --table-hover: #333;
+                --shadow: rgba(0, 0, 0, 0.3);
+            }
+        }
+        @media (max-width: 576px) {
+            .container {
+                padding: 20px;
+                max-width: 100%;
+            }
+            h1 {
+                font-size: clamp(1.5rem, 5vw, 2rem);
+            }
+            .vdot-highlight-card h3 {
+                font-size: 2.5rem;
+            }
+            #theme-switcher {
+                top: 10px;
+                right: 10px;
+            }
+        }
+    </style>
+</head>
+<body data-bs-theme="light">
+    <div id="theme-switcher" class="dropdown">
+        <button class="btn btn-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+            <i class="bi bi-palette"></i> 主题
+        </button>
+        <ul class="dropdown-menu">
+            <li><a class="dropdown-item" href="#" onclick="setTheme('light')">浅色</a></li>
+            <li><a class="dropdown-item" href="#" onclick="setTheme('dark')">深色</a></li>
+            <li><a class="dropdown-item" href="#" onclick="setTheme('system')">跟随系统</a></li>
+        </ul>
+    </div>
+    
+    <div class="container">
+        <h1><i class="bi bi-speedometer2 me-2"></i> VDOT 计算器</h1>
+        <p>选择赛跑距离并输入您的近期最佳成绩时间或配速（至少输入其一），即可获得 VDOT 值、平均配速、等效赛绩以及 Daniels 训练配速建议。</p>
+        
+        <form id="vdotForm">
+            <div class="mb-3">
+                <label for="distance" class="form-label"><i class="bi bi-rulers me-2"></i>选择距离：</label>
+                <select id="distance" class="form-select">
+                    <option value="1500">1500m</option>
+                    <option value="3000">3km</option>
+                    <option value="5000">5km</option>
+                    <option value="10000">10km</option>
+                    <option value="15000">15km</option>
+                    <option value="21097.5">半马 (21.0975km)</option>
+                    <option value="42195">全马 (42.195km)</option>
+                </select>
+            </div>
+            
+            <div class="mb-3">
+                <label for="time" class="form-label"><i class="bi bi-clock me-2"></i>成绩时间：</label>
+                <input type="text" id="time" class="form-control" placeholder="例如: 20:00 或 1:30:00">
+            </div>
+            
+            <div class="mb-3">
+                <label for="pace" class="form-label"><i class="bi bi-stopwatch me-2"></i>平均配速 (/km)：</label>
+                <input type="text" id="pace" class="form-control" placeholder="例如: 4:00">
+            </div>
+            
+            <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                <button type="button" class="btn btn-primary me-md-2" onclick="calculateVDOT()"><i class="bi bi-calculator me-2"></i>计算 VDOT</button>
+                <button type="button" class="btn btn-reset" onclick="resetForm()"><i class="bi bi-arrow-counterclockwise me-2"></i>复位</button>
+            </div>
+        </form>
+        
+        <div id="result" class="card"></div>
+    </div>
+    
+    <section id="daniels-knowledge" class="container mt-4">
+        <h2><i class="bi bi-book me-2"></i>Jack Daniels 跑步知识</h2>
+        <p>Jack Daniels 是著名跑步教练和生理学家，以科学方法著称。以下是其跑步公式中的关键概念：</p>
+        <ul class="list-group list-group-flush">
+            <li class="list-group-item"><strong>VDOT 系统</strong>：一种基于赛绩评估跑步能力和训练强度的指标，源自 VO2 max（最大摄氧量），帮助个性化训练配速。</li>
+            <li class="list-group-item"><strong>训练原则</strong>：强调强度、容量和恢复的平衡；每个训练应有明确目的，如改善有氧能力或跑步经济性。</li>
+            <li class="list-group-item"><strong>训练类型</strong>：包括 Easy (E/L) 用于恢复、Threshold (T) 用于阈值提升、Interval (I) 和 Repetition (R) 用于速度训练。</li>
+            <li class="list-group-item"><strong>步频建议</strong>：目标为 180 步/分钟，以减少着地冲击并提升效率。</li>
+            <li class="list-group-item"><strong>成功要素</strong>：跑步成功依赖能力、动机、机会和指导；适应环境（如海拔、温度）以优化表现。</li>
+            <li class="list-group-item"><strong>整体方法</strong>：通过渐进训练改善 VO2 max 和经济性，实现持久进步；建议参考《Daniels' Running Formula》获取完整指导。</li>
+        </ul>
+    </section>
+    
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
+    
+    <script>
+        // 主题切换函数
+        function setTheme(theme) {
+            if (theme === 'system') {
+                document.body.removeAttribute('data-bs-theme');
+                localStorage.removeItem('theme');
+            } else {
+                document.body.setAttribute('data-bs-theme', theme);
+                localStorage.setItem('theme', theme);
+            }
+        }
+
+        // 加载保存的主题
+        const savedTheme = localStorage.getItem('theme');
+        if (savedTheme) {
+            setTheme(savedTheme);
+        }
+
+        // 复位表单
+        function resetForm() {
+            document.getElementById('distance').selectedIndex = 0;
+            document.getElementById('time').value = '';
+            document.getElementById('pace').value = '';
+            document.getElementById('result').innerHTML = '';
+        }
+
+        // 距离标签映射
+        const distanceLabels = {
+            1500: '1500m',
+            3000: '3km',
+            5000: '5km',
+            10000: '10km',
+            15000: '15km',
+            21097.5: '半马',
+            42195: '全马'
+        };
+
+        // 输入自动格式化（时间）
+        document.getElementById('time').addEventListener('input', function(e) {
+            let value = e.target.value.replace(/\D/g, '');
+            if (value.length > 4) {
+                value = value.substring(0, value.length - 4) + ':' + 
+                        value.substring(value.length - 4, value.length - 2) + ':' + 
+                        value.substring(value.length - 2);
+            } else if (value.length > 2) {
+                value = value.substring(0, value.length - 2) + ':' + value.substring(value.length - 2);
+            }
+            e.target.value = value;
+        });
+
+        // 输入自动格式化（配速，mm:ss）
+        document.getElementById('pace').addEventListener('input', function(e) {
+            let value = e.target.value.replace(/\D/g, '');
+            if (value.length > 2) {
+                value = value.substring(0, value.length - 2) + ':' + value.substring(value.length - 2);
+            }
+            e.target.value = value;
+        });
+
+        function calculateVDOT() {
+            const distanceSelect = document.getElementById('distance');
+            const timeInput = document.getElementById('time');
+            const paceInput = document.getElementById('pace');
+            const resultDiv = document.getElementById('result');
+            
+            resultDiv.innerHTML = '';
+            
+            const selectedDistance = parseFloat(distanceSelect.value);
+            const distanceKm = selectedDistance / 1000;
+            
+            let totalMinutes = parseTime(timeInput.value);
+            let paceMinutes = parsePace(paceInput.value);
+            
+            if (isNaN(totalMinutes) && isNaN(paceMinutes)) {
+                resultDiv.innerHTML = '<div class="warning">请至少输入时间或配速！</div>';
+                return;
+            }
+            
+            if (!isNaN(paceMinutes) && isNaN(totalMinutes)) {
+                totalMinutes = paceMinutes * distanceKm;
+                timeInput.value = formatTime(totalMinutes);
+            }
+            
+            if (!isNaN(totalMinutes) && isNaN(paceMinutes)) {
+                paceMinutes = totalMinutes / distanceKm;
+                paceInput.value = formatPace(paceMinutes);
+            }
+            
+            if (!isNaN(totalMinutes) && !isNaN(paceMinutes)) {
+                const calculatedPace = totalMinutes / distanceKm;
+                if (Math.abs(calculatedPace - paceMinutes) > 0.01) {
+                    resultDiv.innerHTML = '<div class="warning">输入的时间和配速不一致！将使用时间计算。</div>';
+                    paceMinutes = calculatedPace;
+                    paceInput.value = formatPace(paceMinutes);
+                }
+            }
+            
+            if (isNaN(totalMinutes) || totalMinutes <= 0) {
+                resultDiv.innerHTML = '<div class="warning">无效的时间输入！</div>';
+                return;
+            }
+            
+            const v = selectedDistance / totalMinutes;
+            const t = totalMinutes;
+            const e = Math.exp;
+            const numerator = -4.60 + 0.182258 * v + 0.000104 * v * v;
+            const denominator = 0.8 + 0.1894393 * e(-0.012778 * t) + 0.2989558 * e(-0.1932605 * t);
+            const vdot = numerator / denominator;
+            
+            if (vdot < 30 || vdot > 85) {
+                let msg = vdot < 30 
+                    ? '计算得到的 VDOT 值过低（<30），可能输入的时间过慢或非全力成绩。请检查输入是否正确，或尝试更合理的比赛时间。'
+                    : '计算得到的 VDOT 值过高（>85），可能输入的时间过快或超出公式适用范围。请检查输入是否正确，或尝试更现实的比赛时间。';
+                resultDiv.innerHTML = `<div class="warning">${msg}</div>`;
+                return;
+            }
+            
+            const paceStr = formatPace(paceMinutes);
+            
+            let equivTableHtml = '<div class="table-responsive"><table class="table table-striped table-hover table-bordered"><thead><tr><th>距离</th><th>等效时间</th><th>配速 (/km)</th></tr></thead><tbody>';
+            const distances = [1500, 3000, 5000, 10000, 15000, 21097.5, 42195];
+            distances.forEach(dist => {
+                const predTime = predictTime(vdot, dist);
+                const predPace = predTime / (dist / 1000);
+                const rowClass = (dist === selectedDistance) ? ' class="table-warning"' : '';
+                equivTableHtml += `<tr${rowClass}><td>${distanceLabels[dist]}</td><td>${formatTime(predTime)}</td><td>${formatPace(predPace)}</td></tr>`;
+            });
+            equivTableHtml += '</tbody></table></div>';
+            
+            let trainingTableHtml = '<div class="table-responsive"><table class="table table-striped table-hover table-bordered"><thead><tr><th>训练类型</th><th>配速 (min/km)</th><th>描述</th></tr></thead><tbody>';
+            const trainingTypes = [
+                { name: 'Easy/Long (E/L) 慢', percent: 0.63, desc: '恢复跑、长距离跑 (范围下限)' },
+                { name: 'Easy/Long (E/L) 快', percent: 0.73, desc: '恢复跑、长距离跑 (范围上限)' },
+                { name: 'Marathon (M)', percent: 0.82, desc: '马拉松配速训练' },
+                { name: 'Threshold (T)', percent: 0.88, desc: '阈值跑、节奏跑' },
+                { name: 'Interval (I)', percent: 0.98, desc: '间歇跑 (适合 1000-1200m)' },
+                { name: 'Repetition (R)', percent: 1.06, desc: '重复跑 (适合 200-400m)' }
+            ];
+            trainingTypes.forEach(type => {
+                const targetVO2 = type.percent * vdot;
+                const a = 0.000104;
+                const b = 0.182258;
+                const c = -(targetVO2 + 4.60);
+                const discriminant = b * b - 4 * a * c;
+                if (discriminant > 0) {
+                    const vTrain = (-b + Math.sqrt(discriminant)) / (2 * a);
+                    const paceTrain = 1000 / vTrain;
+                    trainingTableHtml += `<tr><td>${type.name}</td><td>${formatPace(paceTrain)}</td><td>${type.desc}</td></tr>`;
+                }
+            });
+            trainingTableHtml += '</tbody></table></div>';
+            
+            // 突出显示 VDOT 部分（整体卡片）
+            resultDiv.innerHTML = `
+                <div class="card-body">
+                    <div class="vdot-highlight-card">
+                        <h3>${vdot.toFixed(1)}</h3>
+                        <p>您的 VDOT 值</p>
+                        <p class="mb-0">平均配速：${paceStr} /km</p>
+                    </div>
+                    <h6>同等跑力下其他距离等效成绩：</h6>
+                    ${equivTableHtml}
+                    <h6>训练配速建议（基于 Daniels 系统）：</h6>
+                    ${trainingTableHtml}
+                </div>
+            `;
+        }
+
+        function parseTime(timeStr) {
+            if (!timeStr) return NaN;
+            const parts = timeStr.split(':');
+            if (parts.length === 2) {
+                return parseInt(parts[0]) + parseFloat(parts[1]) / 60;
+            } else if (parts.length === 3) {
+                return parseInt(parts[0]) * 60 + parseInt(parts[1]) + parseFloat(parts[2]) / 60;
+            }
+            return NaN;
+        }
+
+        function parsePace(paceStr) {
+            if (!paceStr) return NaN;
+            const parts = paceStr.split(':');
+            if (parts.length === 2) {
+                return parseInt(parts[0]) + parseFloat(parts[1]) / 60;
+            }
+            return NaN;
+        }
+
+        function predictTime(targetVdot, distance) {
+            let low = 1;
+            let high = 10000;
+            const epsilon = 0.01;
+            while (high - low > epsilon) {
+                const mid = (low + high) / 2;
+                const v = distance / mid;
+                const t = mid;
+                const e = Math.exp;
+                const num = -4.60 + 0.182258 * v + 0.000104 * v * v;
+                const den = 0.8 + 0.1894393 * e(-0.012778 * t) + 0.2989558 * e(-0.1932605 * t);
+                const calcVdot = num / den;
+                if (calcVdot < targetVdot) {
+                    high = mid;
+                } else {
+                    low = mid;
+                }
+            }
+            return (low + high) / 2;
+        }
+
+        function formatTime(minutes) {
+            const hours = Math.floor(minutes / 60);
+            const mins = Math.floor(minutes % 60);
+            const secs = Math.floor((minutes - Math.floor(minutes)) * 60);
+            const minsStr = mins.toString().padStart(2, '0');
+            const secsStr = secs.toString().padStart(2, '0');
+            if (hours > 0) {
+                return `${hours}:${minsStr}:${secsStr}`;
+            } else {
+                return `${mins}:${secsStr}`;
+            }
+        }
+
+        function formatPace(paceMinutes) {
+            const mins = Math.floor(paceMinutes);
+            const secs = Math.floor((paceMinutes - mins) * 60);
+            return `${mins}:${secs.toString().padStart(2, '0')}`;
+        }
+    </script>
+</body>
+</html>
